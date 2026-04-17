@@ -1,0 +1,45 @@
+<div class="dashboard-container">
+  <header>
+    <h1>Inventory Forecast Tool</h1>
+    <p>Bright Wang • Canadian Spa Company</p>
+  </header>
+
+
+  <div class="input-card">
+    <div class="form-group">
+      <label>Upload Sales Data (xlsx)</label>
+      <input type="file" #fileInput (change)="onFileUpload($event)" accept=".xlsx, .xls">
+      <small *ngIf="parsedFileName" class="success-text">Loaded: {{ parsedFileName }}</small>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>SKU</label>
+        <input [(ngModel)]="sku" placeholder="e.g. KA-10002, KK-10691, ..." />
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input [(ngModel)]="location" placeholder="e.g. HFX/OAKVILLE/..." />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Service Rate (%)</label>
+        <input type="number" [(ngModel)]="targetServiceRate" placeholder="98" />
+      </div>
+      <div class="form-group">
+        <label>Lead Times (Days)</label>
+        <input [(ngModel)]="leadTimeInput" placeholder="10, 12, 15, 9, ..." /><br>
+        <small>Note: Enter observed lead times separated by commas</small>
+      </div>
+    </div>
+
+    <button (click)="calculate()" class="btn-primary">Generate Forecast</button>
+    
+    <p *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</p>
+  </div>
+  <button (click)="exportToExcel()" class="btn-success" style="width: 100%; margin-top: 10px;">
+      📊 Download to Excel (.xlsx)
+  </button>
+</div>

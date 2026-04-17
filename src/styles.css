@@ -1,0 +1,13 @@
+/* You can add global styles to this file, and also import other style files */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #f3f2f1; /* Microsoft's standard light gray background */
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  color: #323130; /* Soft black for better readability */
+}
+
+* {
+  box-sizing: border-box;
+}
