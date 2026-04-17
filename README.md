@@ -5,7 +5,7 @@ The purpose of the tool is to create a stockkeeping unit for an item to be able 
 year's sales, along with some user input, and calculate several crucial factors needed for forecasting. Examples include safety stock quantity, reorder point, and reorder quantities.
 The tool then creates an Excel file, which can be downloaded to view all the information of the item(s) you inputted.
 
-To see sample inputs, see repository CSC-Projects.
+To see sample inputs, see repository CSC-projects.
 
 To ensure the forecast runs smoothly, please follow these formatting guidelines:
 
