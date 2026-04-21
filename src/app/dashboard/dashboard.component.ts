@@ -13,7 +13,6 @@ import * as XLSX from 'xlsx';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
-  // --- Input State ---
   sku: string = ''; 
   location: string = '';
   targetServiceRate: number = 98;
@@ -24,7 +23,6 @@ export class DashboardComponent {
   csvData: any[] = [];
   parsedFileName: string = '';
 
-  // --- Output State ---
   forecast: CSC | null = null;
   errorMessage: string = ''; 
 
@@ -34,7 +32,7 @@ export class DashboardComponent {
 
   @ViewChild('fileInput') fileInput!: ElementRef;
 
-  // Handle File Upload (Replaces excel.py loading)
+  // Handle File Upload
   onFileUpload(event: any) {
     this.errorMessage = '';
     const target: DataTransfer = <DataTransfer>(event.target);
@@ -55,9 +53,8 @@ export class DashboardComponent {
         const workbook: XLSX.WorkBook = XLSX.read(arrayBuffer, { type: 'array' });
         
         const sheetNames = workbook.SheetNames;
-        let targetSheetName = sheetNames[0]; // Fallback to the first tab
+        let targetSheetName = sheetNames[0];
 
-        // Loop through every tab in the Excel file
         for (const sheetName of sheetNames) {
           const tempSheet = workbook.Sheets[sheetName];
           
@@ -70,7 +67,6 @@ export class DashboardComponent {
           const hasSkuColumn = previewText.includes('sku') || previewText.includes('skuname') || previewText.includes('item');
           const hasLocationColumn = previewText.includes('location') || previewText.includes('loc') || previewText.includes('warehouse');
 
-          // If it has both, it is mathematically guaranteed to be your data tab
           if (hasSkuColumn && hasLocationColumn) {
             targetSheetName = sheetName;
             console.log(`Securely locked onto data tab: "${sheetName}"`);
@@ -80,8 +76,6 @@ export class DashboardComponent {
 
         const worksheet: XLSX.WorkSheet = workbook.Sheets[targetSheetName];
         
-        // Load the sheet as a 2D Array of strings, instead of objects
-        // This bypasses the multi-line header issue completely
         const rawData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
         
         if (rawData.length === 0) throw new Error("File is empty.");
@@ -96,12 +90,12 @@ export class DashboardComponent {
               for (let c = 0; c < rawData[r].length; c++) {
                 const cellVal = String(rawData[r][c]).trim().toLowerCase();
                 if (cellVal === kw || (kw.length > 2 && cellVal.includes(kw))) {
-                  return c; // We found the exact column number
+                  return c;
                 }
               }
             }
           }
-          return -1; // Keyword not found
+          return -1;
         };
 
         // Locate the exact column number for every required field
@@ -109,13 +103,10 @@ export class DashboardComponent {
         const locIdx = findColIdx(['location', 'loc', 'warehouse']);
         const srvIdx = findColIdx(['srv', 'service', 'van']);
 
-        // Automatically grabs the current real-world year (e.g., 2026)
         const currentYear = new Date().getFullYear(); 
         
-        // Target the last completed year for the forecast (e.g., 2025)
         const targetYear = currentYear - 1;           
         
-        // Trim the years
         const targetYearStr = targetYear.toString().slice(-2); 
         const currentYearStr = currentYear.toString().slice(-2);
 
@@ -150,7 +141,7 @@ export class DashboardComponent {
           const cellSku = skuIdx < row.length ? String(row[skuIdx]).trim() : '';
           let cellLoc = locIdx !== -1 && locIdx < row.length ? String(row[locIdx]).trim() : '';
 
-          // Default to Oakville if no location found
+          // Default to Oakville if no location found (can be changed)
           if (!cellLoc) {
             cellLoc = 'OAKVILLE';
           }
@@ -176,7 +167,6 @@ export class DashboardComponent {
             continue;
           }
 
-          // Build object for our DataProcessor
           const obj: any = {};
           obj['sku'] = cellSku;
           
@@ -208,7 +198,7 @@ export class DashboardComponent {
     reader.readAsArrayBuffer(file);
   }
 
-  // Run Calculations (Replaces the main execution loop)
+  // Run Calculations
   calculate() {
     this.forecastHistory = [];
     this.errorMessage = '';
@@ -232,7 +222,7 @@ export class DashboardComponent {
 
     if (this.sku.trim().toUpperCase() === 'ALL') {
       this.processAllSkus(freshLeadTimesArray);
-      return; // Stop here so it doesn't run the single-SKU logic below
+      return;
     }
 
     // Split the SKU input string by commas and clean up the spaces
@@ -246,11 +236,9 @@ export class DashboardComponent {
       return;
     }
 
-    // Track successes and failures
     let successCount = 0;
     const notFoundList: string[] = [];
 
-    // Loop through every SKU in the list
     skuList.forEach(targetSku => {
       const result = this.inventoryService.generateForecast(
         this.csvData,
@@ -261,7 +249,6 @@ export class DashboardComponent {
       );
 
       if (result) {
-        // Push successful hits to the history table
         const isDuplicate = this.forecastHistory.some(
           item => item.sku.toLowerCase() === targetSku.toLowerCase() && item.location.toLowerCase() === this.location.toLowerCase()
         );
@@ -270,12 +257,11 @@ export class DashboardComponent {
         }
         successCount++;
       } else {
-        // Track the ones that failed
         notFoundList.push(targetSku);
       }
     });
 
-    // Update the UI with a smart status message
+    // Update the UI with a status message
     if (successCount > 0) {
       this.errorMessage = `Successfully processed ${successCount} SKU(s).`;
       if (notFoundList.length > 0) {
@@ -293,7 +279,7 @@ export class DashboardComponent {
     const headerRow: any = {};
     allHeaders.forEach(key => headerRow[key] = '');
 
-    // Identify the keys (using the same logic as your DataProcessor)
+    // Identify the keys
     const skuKey = this.findKey(headerRow, ['sku', 'item', 'item sku']);
     const locKey = this.findKey(headerRow, ['location', 'loc', 'warehouse']);
 
@@ -309,7 +295,7 @@ export class DashboardComponent {
       const rowLoc = (locKey && row[locKey]) ? String(row[locKey]).trim() : '';
       
       if (rowSku) {
-        const uniqueKey = `${rowSku}_${rowLoc}`; // Combine them to ensure uniqueness
+        const uniqueKey = `${rowSku}_${rowLoc}`;
         if (!uniqueItems.has(uniqueKey)) {
           uniqueItems.set(uniqueKey, { sku: rowSku, loc: rowLoc });
         }
@@ -324,7 +310,6 @@ export class DashboardComponent {
       );
 
       if (result) {
-        // Prevent adding exact duplicates to the history table
         const isDuplicate = this.forecastHistory.some(
           historyItem => historyItem.sku === item.sku && historyItem.location === item.loc
         );
@@ -336,11 +321,11 @@ export class DashboardComponent {
     });
 
     // Update the UI
-    this.forecast = null; // Clear the single-item view to focus on the history box
+    this.forecast = null;
     this.errorMessage = `Successfully processed ${successCount} SKUs. Scroll down to export them to Excel.`;
   }
 
-  // Helper function to find column names regardless of capitalization
+  // Helper function to find column names
   private findKey(row: any, keywords: string[]): string | null {
     const keys = Object.keys(row);
     for (const keyword of keywords) {
@@ -371,7 +356,6 @@ export class DashboardComponent {
         'Average Daily Sales': item.data.getMeanDailyRounded(),
         'Safety Stock Quantity': item.data.getSafetyStockWithLeadTimeRounded(),
         'Reorder Point': item.data.getReorderPointWithLeadTime()
-        // 'Annual Reorder Quantity': item.data.getReorderQuantity()
       };
 
       // Dynamically generate a new column for each lead time
