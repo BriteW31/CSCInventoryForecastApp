@@ -74,7 +74,6 @@ export class CSC {
   }
 
   getMeanRounded(): number {
-    // return Math.round(this.getMean());
     return Number(this.getMean().toFixed(2));
   }
 
@@ -83,8 +82,6 @@ export class CSC {
   }
 
   getMeanDailyRounded(): number {
-    // const val = this.getMeanDaily();
-    // return Math.round(val * 10) / 10;
     return Number(this.getMeanDaily().toFixed(2));
   }
 
@@ -120,7 +117,6 @@ export class CSC {
     const mean = this.getMean();
     const sdLeadMonth = this.getSDFromLeadTimeMonths();
 
-    // Python: math.sqrt((avgLead * (sdTotal^2)) + (mean * sdLead)^2)
     const part1 = avgLeadMonth * Math.pow(sdTotal, 2);
     const part2 = Math.pow(mean * sdLeadMonth, 2);
     
@@ -150,7 +146,6 @@ export class CSC {
   }
 
   getReorderQuantityNumDays(): { [key: number]: number } {
-    // const reorder = this.getReorderQuantity();
     const daily = this.getMeanDaily();
     const quantity: { [key: number]: number } = {};
     
@@ -159,7 +154,6 @@ export class CSC {
     
     uniqueLeadTimes.forEach(lead => {
       const leadTimeReorder = daily * lead;
-      // const leadTimeReorder = reorder * (lead / 365.25);
       quantity[lead] = Math.round(leadTimeReorder);
     });
 
